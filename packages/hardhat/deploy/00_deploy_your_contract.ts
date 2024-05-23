@@ -3,12 +3,12 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "YourContract" using the deployer account and
- * constructor arguments set to the deployer address
+ * Deploys contracts named "GameContract", "WordSelector", "WordanaGame", and "RewardItem" using the deployer account
+ * and constructor arguments set to the deployer address
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -22,7 +22,8 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  // Deploy GameContract
+  await deploy("GameContract", {
     from: deployer,
     // Contract constructor arguments
     args: [deployer],
@@ -32,13 +33,55 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
-  // Get the deployed contract to interact with it after deploying.
-  const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
-  console.log("👋 Initial greeting:", await yourContract.greeting());
+  // Get the deployed YourContract to interact with it after deploying.
+  const gameContract = await hre.ethers.getContract<Contract>("GameContract", deployer);
+  console.log("👋 Initial greeting from GameContract:", await gameContract.greeting());
+
+  // Deploy WordSelector
+  await deploy("WordSelector", {
+    from: deployer,
+    // Contract constructor arguments (if any, otherwise leave empty or customize accordingly)
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  // Get the deployed WordSelector to interact with it after deploying.
+  const wordSelector = await hre.ethers.getContract<Contract>("WordSelector", deployer);
+  console.log("📚 WordSelector deployed at:", wordSelector.address);
+
+  // Deploy RewardItem
+  await deploy("RewardItem", {
+    from: deployer,
+    // Contract constructor arguments (none for RewardItem)
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  // Get the deployed RewardItem to interact with it after deploying.
+  const rewardItem = await hre.ethers.getContract<Contract>("RewardItem", deployer);
+  console.log("🏆 RewardItem deployed at:", rewardItem.address);
+
+  // Deploy SinglePlayer
+  const tokensToEarn = 100; // Replace with actual tokens to earn
+  const appkey = 'your_app_key'; // Replace with actual app key
+
+  await deploy("SinglePlayer", {
+    from: deployer,
+    // Contract constructor arguments
+    args: [rewardItem.address, tokensToEarn, appkey],
+    log: true,
+    autoMine: true,
+  });
+
+  // Get the deployed SinglePlayer to interact with it after deploying.
+  const wordanaGame = await hre.ethers.getContract<Contract>("SinglePlayer", deployer);
+  console.log("🎮 WordanaGame deployed at:", wordanaGame.address);
 };
 
-export default deployYourContract;
+export default deployContracts;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["YourContract"];
+// e.g. yarn deploy --tags GameContract
+deployContracts.tags = ["GameContract", "WordSelector", "SinglePlayer", "RewardToken"];
